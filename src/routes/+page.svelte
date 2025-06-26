@@ -5,7 +5,7 @@
 	function generate_source_items(count: number) {
 		return Array.from({ length: count }, () => String(Math.random()).slice(2))
 	}
-	let source_items = generate_source_items(50_000)
+	let source_items = generate_source_items(500_000)
 
 	const virtual_grid = VirtualGrid.create(source_items, {
 		row_prepare(source_item, index) {
@@ -29,12 +29,6 @@
 		virtual_grid.set_columns(columns)
 	})
 
-	let item_count = $state(50_000)
-	$effect(() => {
-		source_items = generate_source_items(item_count)
-		virtual_grid.set_source_items(source_items)
-	})
-
 	const selection = new KSelection(source_items, {
 		scroll_to({ index }) {
 			virtual_grid.scroll_to_index(index)
@@ -50,14 +44,8 @@
 </script>
 
 <div class="h-screen max-h-screen gap-2 flex flex-col p-5">
-	<h1 class="text-3xl">Virtual grid</h1>
-	<div>
-		<select class="appearance-auto w-auto bg-gray-700" bind:value={item_count}>
-			{#each [50_000, 500_000] as size}
-				<option value={size}>{Intl.NumberFormat().format(size)} rows</option>
-			{/each}
-		</select>
-	</div>
+	<h1 class="text-3xl">Virtual grid with row selection</h1>
+	<p>{Intl.NumberFormat().format(500_000)} rows</p>
 	<!-- Virtual grid viewport -->
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<div
