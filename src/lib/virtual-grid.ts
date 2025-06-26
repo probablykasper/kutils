@@ -26,6 +26,14 @@ type Row = {
 }
 
 /**
+ * ## Virtual grid
+ * High-performance virtual grid. Renders rows as HTML elements directly for better scroll performance instead of relying on a JS framework (which means custom markup needs to be created with JS).
+ *
+ * Features:
+ * - Renders rows as HTML elements directly instead of using a JS framework (for better scroll performance)
+ * - Rows can be dynamically loaded
+ * - Columns can have fixed and percentage widths
+ *
  * Note that parentElement is not reactive.
  * Do not add other elements into the row elements. Things would break because cells are referenced by indexing into the row's children.
  */

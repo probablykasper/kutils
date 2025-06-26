@@ -2,39 +2,32 @@ export function is_mac() {
 	return /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform)
 }
 
-type ShortcutOptions = {
-	shift?: boolean
-	alt?: boolean
-	cmd_or_ctrl?: boolean
-}
+type Modifier = 'shift' | 'alt' | 'cmdOrCtrl'
 
-export function check_modifiers(e: KeyboardEvent | MouseEvent, options: ShortcutOptions = {}) {
-	const target = {
-		shift: options.shift || false,
-		alt: options.alt || false,
-		ctrl: (!is_mac() && options.cmd_or_ctrl) || false,
-		meta: (is_mac() && options.cmd_or_ctrl) || false,
-	}
-
-	const pressed = {
-		shift: !!e.shiftKey,
-		alt: !!e.altKey,
-		ctrl: !!e.ctrlKey,
-		meta: !!e.metaKey,
+/** Check the pressed modifiers for an event. This is strict, so if you pass no modifiers, it will return true if the event has no modifiers. */
+export function check_modifiers(e: KeyboardEvent | MouseEvent, ...modifiers: Modifier[]) {
+	let shift = false
+	let alt = false
+	let ctrl = false
+	let meta = false
+	for (const modifier of modifiers) {
+		if (modifier === 'shift') {
+			shift = true
+		} else if (modifier === 'alt') {
+			alt = true
+		} else if (modifier === 'cmdOrCtrl') {
+			ctrl = !is_mac()
+			meta = !ctrl
+		}
 	}
 
 	return (
-		pressed.shift === target.shift &&
-		pressed.alt === target.alt &&
-		pressed.ctrl === target.ctrl &&
-		pressed.meta === target.meta
+		!!e.shiftKey === shift && !!e.altKey === alt && !!e.ctrlKey === ctrl && !!e.metaKey === meta
 	)
 }
 
-export function check_shortcut(e: KeyboardEvent, key: string, options: ShortcutOptions = {}) {
+/** Check the pressed key and modifiers for a keyboard event. This is strict, so if you pass no modifiers, it will return true if the event has no modifiers. */
+export function check_shortcut(e: KeyboardEvent, key: string, ...modifiers: Modifier[]) {
 	if (e.key.toUpperCase() !== key.toUpperCase()) return false
-	return check_modifiers(e, options)
-}
-export function check_mouse_shortcut(e: MouseEvent, options: ShortcutOptions = {}) {
-	return check_modifiers(e, options)
+	return check_modifiers(e, ...modifiers)
 }

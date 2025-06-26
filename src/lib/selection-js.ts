@@ -1,4 +1,4 @@
-import { check_mouse_shortcut, check_shortcut } from './shortcuts.ts'
+import { check_modifiers, check_shortcut } from './shortcuts.ts'
 
 export type SelectionOptions<T> = {
 	scroll_to: (target: { item: T; index: number }) => void
@@ -262,12 +262,12 @@ export class KSelection<T> {
 
 	mouse_down_select(e: MouseEvent, index: number) {
 		const is_selected = this.items.has(this.all[index])
-		if (check_mouse_shortcut(e) && !is_selected) {
+		if (check_modifiers(e) && !is_selected) {
 			this.clear()
 			this.add_index_unchecked(index)
-		} else if (check_mouse_shortcut(e, { cmd_or_ctrl: true }) && !is_selected) {
+		} else if (check_modifiers(e, 'cmdOrCtrl') && !is_selected) {
 			this.add_index_unchecked(index)
-		} else if (check_mouse_shortcut(e, { shift: true })) {
+		} else if (check_modifiers(e, 'shift')) {
 			this.shift_select_to(index)
 		}
 	}
@@ -304,10 +304,10 @@ export class KSelection<T> {
 	}
 	handle_click(e: MouseEvent, index: number) {
 		if (this.possible_row_click && e.button === 0) {
-			if (check_mouse_shortcut(e)) {
+			if (check_modifiers(e)) {
 				this.clear()
 				this.add_index_unchecked(index)
-			} else if (check_mouse_shortcut(e, { cmd_or_ctrl: true })) {
+			} else if (check_modifiers(e, 'cmdOrCtrl')) {
 				this.#toggle(index)
 			}
 		}
@@ -316,38 +316,38 @@ export class KSelection<T> {
 	handle_keydown(e: KeyboardEvent) {
 		if (check_shortcut(e, 'Escape')) {
 			this.clear()
-		} else if (check_shortcut(e, 'A', { cmd_or_ctrl: true })) {
+		} else if (check_shortcut(e, 'A', 'cmdOrCtrl')) {
 			if (this.all.length > 1) {
 				this.#add_index_range_in_shift_mode(0, this.all.length - 1)
 			}
 		} else if (check_shortcut(e, 'ArrowUp')) {
 			this.go_backward()
 			if (this.last_added) this.scroll_to({ ...this.last_added })
-		} else if (check_shortcut(e, 'ArrowUp', { shift: true })) {
+		} else if (check_shortcut(e, 'ArrowUp', 'shift')) {
 			this.shift_select_backward()
 			if (this.last_added) this.scroll_to({ ...this.last_added })
-		} else if (check_shortcut(e, 'ArrowUp', { alt: true })) {
+		} else if (check_shortcut(e, 'ArrowUp', 'alt')) {
 			this.clear()
 			if (this.all.length > 1) {
 				this.add_index_unchecked(0)
 				if (this.last_added) this.scroll_to({ ...this.last_added })
 			}
-		} else if (check_shortcut(e, 'ArrowUp', { shift: true, alt: true })) {
+		} else if (check_shortcut(e, 'ArrowUp', 'shift', 'alt')) {
 			this.shift_select_to(0)
 			if (this.last_added) this.scroll_to({ ...this.last_added })
 		} else if (check_shortcut(e, 'ArrowDown')) {
 			this.go_forward()
 			if (this.last_added) this.scroll_to({ ...this.last_added })
-		} else if (check_shortcut(e, 'ArrowDown', { shift: true })) {
+		} else if (check_shortcut(e, 'ArrowDown', 'shift')) {
 			this.shift_select_forward()
 			if (this.last_added) this.scroll_to({ ...this.last_added })
-		} else if (check_shortcut(e, 'ArrowDown', { alt: true })) {
+		} else if (check_shortcut(e, 'ArrowDown', 'alt')) {
 			this.clear()
 			if (this.all.length > 1) {
 				this.add_index_unchecked(this.all.length - 1)
 				if (this.last_added) this.scroll_to({ ...this.last_added })
 			}
-		} else if (check_shortcut(e, 'ArrowDown', { shift: true, alt: true })) {
+		} else if (check_shortcut(e, 'ArrowDown', 'shift', 'alt')) {
 			this.shift_select_to(this.all.length - 1)
 			if (this.last_added) this.scroll_to({ ...this.last_added })
 		} else {
