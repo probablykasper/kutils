@@ -1,3 +1,3 @@
 # KUtils
 
-Fast, tiny virtual grid
+Utilities for TypeScript and Svelte

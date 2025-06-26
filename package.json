@@ -1,6 +1,8 @@
 {
 	"name": "kutils",
 	"version": "0.0.1",
+	"description": "Utilities for TypeScript and Svelte",
+	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
@@ -22,11 +24,14 @@
 	],
 	"svelte": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
+		},
+		"./virtual-grid": {
+			"types": "./dist/virtual-grid.d.ts",
+			"svelte": "./dist/virtual-grid.js"
 		}
 	},
 	"peerDependencies": {
@@ -50,8 +55,10 @@
 		"vite": "^6.3.5"
 	},
 	"keywords": [
-		"svelte"
-	]
+		"svelte",
+		"typescript",
+		"virtual-grid"
+	],
 	"prettier": {
 		"useTabs": true,
 		"printWidth": 100,
