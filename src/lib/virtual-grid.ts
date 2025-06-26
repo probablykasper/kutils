@@ -2,7 +2,7 @@ export type Column = {
 	name: string
 	key: string
 	width: number
-	is_pct?: true
+	is_pct?: boolean
 	offset?: number
 	/** Handles both creation and updating of rows */
 	cell_render?: (element: HTMLElement, value: unknown) => void
@@ -40,7 +40,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		public options: {
 			buffer?: number
 			row_prepare: (source_items: I, index: number) => R
-			row_render: (element: HTMLElement, item: R, index: number) => void
+			row_render?: (element: HTMLElement, item: R, index: number) => void
 		},
 	) {}
 
@@ -49,7 +49,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		options: {
 			buffer?: number
 			row_prepare: (source_items: I, index: number) => R
-			row_render: (element: HTMLElement, item: R, index: number) => void
+			row_render?: (element: HTMLElement, item: R, index: number) => void
 		},
 	) {
 		return new VirtualGrid<I, R>(source_items, options)
@@ -197,7 +197,6 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 			const row_element = document.createElement('div')
 			row_element.className = 'row'
 			row_element.setAttribute('role', 'row')
-			row_element.setAttribute('draggable', 'true')
 			row.element = row_element
 			this.main_element?.appendChild(row_element)
 
@@ -234,7 +233,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 					cell.textContent = String(cell_value)
 				}
 			}
-			this.options.row_render(row.element, row_item, row.index)
+			this.options.row_render?.(row.element, row_item, row.index)
 			row.rendered = true
 		}
 
