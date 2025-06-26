@@ -157,7 +157,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		const container_width = this.viewport?.clientWidth ?? total_fixed_width
 		const total_percent_width = container_width - total_fixed_width
 		let offset = 0
-		this.columns = columns.map((col) => {
+		const new_columns = columns.map((col) => {
 			col = { ...col }
 			if (col.is_pct) {
 				const pct = col.width / total_percent_pct
@@ -168,13 +168,39 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 			return col
 		})
 
-		// make all rows fully rerender
-		for (const row of this.rows) {
-			row.element?.remove()
+		let resize_only = true
+		if (this.columns.length !== new_columns.length) {
+			resize_only = false
 		}
-		this.rows = []
+		for (let i = 0; i < this.columns.length; i++) {
+			if (new_columns[i].key !== this.columns[i].key) {
+				resize_only = false
+				break
+			}
+		}
 
-		this.refresh(RefreshLevel.NewRows)
+		this.columns = new_columns
+		if (resize_only) {
+			for (const row of this.rows) {
+				if (!row.element) {
+					throw new Error('Unexpected missing row element')
+				}
+				for (let ci = 0; ci < this.columns.length; ci++) {
+					const column = this.columns[ci]
+					const cell = row.element.children[ci] as HTMLElement
+					cell.style.width = `${column.width}px`
+					cell.style.translate = `${column.offset}px 0`
+				}
+			}
+		} else {
+			// make all rows fully rerender
+			for (const row of this.rows) {
+				row.element?.remove()
+			}
+			this.rows = []
+
+			this.refresh(RefreshLevel.NewRows)
+		}
 		return this.columns
 	}
 
@@ -274,6 +300,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		this.#update_viewport_size()
 
 		this.size_observer = new ResizeObserver(() => {
+			this.set_columns(this.columns)
 			this.#update_viewport_size()
 			this.refresh(RefreshLevel.NewRows)
 		})
