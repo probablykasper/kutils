@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SvelteSelection } from '$lib/selection.ts'
+	import { KSelection } from '$lib/selection-svelte.ts'
 	import { RefreshLevel, VirtualGrid } from '$lib/virtual-grid.ts'
 
 	function generate_source_items(count: number) {
@@ -35,7 +35,7 @@
 		virtual_grid.set_source_items(source_items)
 	})
 
-	const selection = new SvelteSelection(source_items, {
+	const selection = new KSelection(source_items, {
 		scroll_to({ index }) {
 			virtual_grid.scroll_to_index(index)
 		},
@@ -47,7 +47,6 @@
 		$selection
 		virtual_grid.refresh(RefreshLevel.AllRows)
 	})
-	$inspect($selection)
 </script>
 
 <div class="h-screen max-h-screen gap-2 flex flex-col p-5">
@@ -60,15 +59,16 @@
 		</select>
 	</div>
 	<!-- Virtual grid viewport -->
-	<div class="h-full relative overflow-y-auto bg-black/50 border border-white/20">
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<div
+		class="h-full relative overflow-y-auto bg-black/50 border border-white/20 outline-none"
+		tabindex="0"
+		{@attach selection.attach_events((e) => {
+			return virtual_grid.get_row_index_from_event(e)
+		})}
+	>
 		<!-- Virtual grid content -->
-		<div
-			class="virtual-grid"
-			{@attach virtual_grid.attach()}
-			{@attach selection.attach_events((e) => {
-				return virtual_grid.get_row_index_from_event(e)
-			})}
-		></div>
+		<div class="virtual-grid" {@attach virtual_grid.attach()}></div>
 	</div>
 </div>
 

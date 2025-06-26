@@ -32,6 +32,14 @@
 		"./virtual-grid": {
 			"types": "./dist/virtual-grid.d.ts",
 			"svelte": "./dist/virtual-grid.js"
+		},
+		"./selection-js": {
+			"types": "./dist/selection-js.d.ts",
+			"svelte": "./dist/selection-js.js"
+		},
+		"./selection-svelte": {
+			"types": "./dist/selection-svelte.d.ts",
+			"svelte": "./dist/selection-svelte.js"
 		}
 	},
 	"peerDependencies": {
