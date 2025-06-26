@@ -3,7 +3,7 @@ import { check_mouse_shortcut, check_shortcut } from './shortcuts.ts'
 
 type SelectionOptions<T> = {
 	scroll_to: (target: { item: T; index: number }) => void
-	on_contextmenu: (items: Set<T>) => void
+	on_contextmenu?: (items: Set<T>) => void
 }
 
 class Selection<T> {
@@ -196,11 +196,9 @@ class Selection<T> {
 		} else if (this.items.size === 0) {
 			this.add_index_unchecked(0)
 		} else if (this.last_added !== null) {
-			console.log('go_forward', { ...this })
 			const next_index = this.last_added.index + 1
 			this.clear()
 			this.add_index_unchecked(Math.min(next_index, this.all.length - 1))
-			console.log('.', { ...this })
 		}
 	}
 	/** Expand or shrink selection backwards (shift+up) */
@@ -275,6 +273,23 @@ class Selection<T> {
 		}
 	}
 
+	/** This does also handle keydown events, which aren't row events */
+	handle_events(e: Event, index: number) {
+		if (e instanceof MouseEvent) {
+			if (e.type === 'mousedown') {
+				this.handle_mouse_down(e, index)
+			} else if (e.type === 'contextmenu') {
+				this.handle_contextmenu(e, index)
+			} else if (e.type === 'click') {
+				this.handle_click(e, index)
+			}
+		} else if (e instanceof KeyboardEvent) {
+			if (e.type === 'keydown') {
+				this.handle_keydown(e)
+			}
+		}
+	}
+
 	handle_mouse_down(e: MouseEvent, index: number) {
 		if (e.button !== 0) {
 			return
@@ -286,7 +301,7 @@ class Selection<T> {
 	}
 	handle_contextmenu(e: MouseEvent, index: number) {
 		this.mouse_down_select(e, index)
-		this.on_contextmenu(this.items)
+		this.on_contextmenu?.(this.items)
 	}
 	handle_click(e: MouseEvent, index: number) {
 		if (this.possible_row_click && e.button === 0) {
@@ -395,5 +410,36 @@ export class SvelteSelection<T> {
 	handle_keydown(e: KeyboardEvent) {
 		this.#selection.handle_keydown(e)
 		this.#store.set(this.#selection.items)
+	}
+	/** This adds all row events, and keydown.
+	 * The listener should return row index.
+	 * Returns an unlisten function. */
+	add_events(element: HTMLElement, listener: (e: MouseEvent | KeyboardEvent) => number | null) {
+		const handler = (e: MouseEvent | KeyboardEvent) => {
+			const index = listener(e)
+			if (Number.isInteger(index)) {
+				this.#selection.handle_events(e, index as number)
+				this.#store.set(this.#selection.items)
+			}
+		}
+		element.addEventListener('mousedown', handler)
+		element.addEventListener('contextmenu', handler)
+		element.addEventListener('click', handler)
+		element.addEventListener('keydown', handler)
+		return () => {
+			element.removeEventListener('mousedown', handler)
+			element.removeEventListener('contextmenu', handler)
+			element.removeEventListener('click', handler)
+			element.removeEventListener('keydown', handler)
+		}
+	}
+	/** This adds all row events, and keydown. The listener should return row index. */
+	attach_events(listener: (e: MouseEvent | KeyboardEvent) => number | null) {
+		return (element: HTMLElement) => {
+			const unlisten = this.add_events(element, (e) => {
+				return listener(e)
+			})
+			return unlisten
+		}
 	}
 }

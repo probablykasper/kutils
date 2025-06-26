@@ -63,6 +63,18 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		this.refresh(RefreshLevel.AllRows)
 	}
 
+	get_row_index_from_event(e: Event) {
+		if (!(e.target instanceof Element)) {
+			return null
+		}
+		const row_element = e.target?.closest('[aria-rowindex]')
+		const row_number = parseInt(row_element?.getAttribute('aria-rowindex') ?? '')
+		if (!row_element || !Number.isInteger(row_number)) {
+			return null
+		}
+		return row_number - 1
+	}
+
 	viewport_row_count = 0
 
 	#update_viewport_size() {

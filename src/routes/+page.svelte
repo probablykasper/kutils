@@ -1,26 +1,29 @@
 <script lang="ts">
-	import { VirtualGrid } from '$lib/virtual-grid.ts'
+	import { SvelteSelection } from '$lib/selection.ts'
+	import { RefreshLevel, VirtualGrid } from '$lib/virtual-grid.ts'
 
 	function generate_source_items(count: number) {
-		return Array.from({ length: count }, (_, i) => String(Math.random()).slice(2))
+		return Array.from({ length: count }, () => String(Math.random()).slice(2))
 	}
+	let source_items = generate_source_items(50_000)
 
-	const virtual_grid = VirtualGrid.create(generate_source_items(50_000), {
+	const virtual_grid = VirtualGrid.create(source_items, {
 		row_prepare(source_item, index) {
 			return {
-				a: index + 1,
+				id: source_item,
+				n: index + 1,
 				b: source_item,
-				c: source_item,
 			}
 		},
-		row_render(element, _item, index) {
+		row_render(element, item, index) {
 			element.classList.toggle('odd', index % 2 === 0)
+			element.classList.toggle('selected', $selection.has(item.id))
 		},
 	})
 	const columns = [
-		{ name: 'a', key: 'a', width: 100 },
+		{ name: 'n', key: 'n', width: 100 },
+		{ name: 'id', key: 'id', width: 50, is_pct: true },
 		{ name: 'b', key: 'b', width: 50, is_pct: true },
-		{ name: 'c', key: 'c', width: 50, is_pct: true },
 	]
 	$effect(() => {
 		virtual_grid.set_columns(columns)
@@ -28,8 +31,23 @@
 
 	let item_count = $state(50_000)
 	$effect(() => {
-		virtual_grid.set_source_items(generate_source_items(item_count))
+		source_items = generate_source_items(item_count)
+		virtual_grid.set_source_items(source_items)
 	})
+
+	const selection = new SvelteSelection(source_items, {
+		scroll_to({ index }) {
+			virtual_grid.scroll_to_index(index)
+		},
+	})
+	$effect(() => {
+		selection.update_all_items(source_items)
+	})
+	$effect(() => {
+		$selection
+		virtual_grid.refresh(RefreshLevel.AllRows)
+	})
+	$inspect($selection)
 </script>
 
 <div class="h-screen max-h-screen gap-2 flex flex-col p-5">
@@ -44,7 +62,13 @@
 	<!-- Virtual grid viewport -->
 	<div class="h-full relative overflow-y-auto bg-black/50 border border-white/20">
 		<!-- Virtual grid content -->
-		<div class="virtual-grid" {@attach virtual_grid.attach()}></div>
+		<div
+			class="virtual-grid"
+			{@attach virtual_grid.attach()}
+			{@attach selection.attach_events((e) => {
+				return virtual_grid.get_row_index_from_event(e)
+			})}
+		></div>
 	</div>
 </div>
 
@@ -54,6 +78,7 @@
 			height: 24px;
 			width: 100%;
 			position: absolute;
+			user-select: none;
 		}
 		.cell {
 			display: block;
@@ -63,6 +88,10 @@
 		}
 		.odd {
 			background-color: hsl(0, 0%, 10%);
+		}
+		.selected {
+			background-color: hsl(224, 100%, 51%);
+			color: white;
 		}
 	}
 </style>
