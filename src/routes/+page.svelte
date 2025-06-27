@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { KSelection } from '$lib/selection-svelte.ts'
-	import { RefreshLevel, VirtualGrid } from '$lib/virtual-grid.ts'
+	import { RefreshLevel, VirtualGrid } from '$lib/virtual-grid.svelte.ts'
 
 	function generate_source_items(count: number) {
 		return Array.from({ length: count }, () => String(Math.random()).slice(2))

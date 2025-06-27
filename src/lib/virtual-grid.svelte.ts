@@ -1,3 +1,5 @@
+import { untrack } from 'svelte'
+
 export type Column = {
 	name: string
 	key: string
@@ -170,7 +172,9 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		})
 	}
 
-	columns: Column[] = []
+	/** Updating columns must be done via `set_columns` */
+	columns: Column[] = $state([])
+	#inner_columns: Column[] = []
 	set_columns(columns: Column[]) {
 		const total_fixed_width = columns.reduce((sum, col) => sum + (col.is_pct ? 0 : col.width), 0)
 		const total_percent_pct = columns.reduce((sum, col) => sum + (col.is_pct ? col.width : 0), 0)
@@ -189,24 +193,25 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		})
 
 		let resize_only = true
-		if (this.columns.length !== new_columns.length) {
+		if (this.#inner_columns.length !== new_columns.length) {
 			resize_only = false
 		}
-		for (let i = 0; i < this.columns.length; i++) {
-			if (new_columns[i].key !== this.columns[i].key) {
+		for (let i = 0; i < this.#inner_columns.length; i++) {
+			if (new_columns[i].key !== this.#inner_columns[i].key) {
 				resize_only = false
 				break
 			}
 		}
 
+		this.#inner_columns = new_columns
 		this.columns = new_columns
 		if (resize_only) {
 			for (const row of this.rows) {
 				if (!row.element) {
 					throw new Error('Unexpected missing row element')
 				}
-				for (let ci = 0; ci < this.columns.length; ci++) {
-					const column = this.columns[ci]
+				for (let ci = 0; ci < this.#inner_columns.length; ci++) {
+					const column = this.#inner_columns[ci]
 					const cell = row.element.children[ci] as HTMLElement
 					cell.style.width = `${column.width}px`
 					cell.style.translate = `${column.offset}px 0`
@@ -221,7 +226,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 
 			this.refresh(RefreshLevel.NewRows)
 		}
-		return this.columns
+		return this.#inner_columns
 	}
 
 	#render() {
@@ -246,7 +251,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 			row.element = row_element
 			this.main_element?.appendChild(row_element)
 
-			for (const column of this.columns) {
+			for (const column of this.#inner_columns) {
 				const cell = document.createElement('div')
 				cell.className = `cell ${column.key}`
 				cell.style.width = `${column.width}px`
@@ -266,8 +271,8 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 			row.element.style.translate = `0 ${row.index * this.row_height}px`
 			row.element.setAttribute('aria-rowindex', String(row.index + 1))
 			const row_item = items[row.index]
-			for (let ci = 0; ci < this.columns.length; ci++) {
-				const column = this.columns[ci]
+			for (let ci = 0; ci < this.#inner_columns.length; ci++) {
+				const column = this.#inner_columns[ci]
 				const cell = row.element.children[ci] as HTMLElement
 				let cell_value = row_item[column.key]
 				if (cell_value === undefined || cell_value === null) {
@@ -320,7 +325,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		this.#update_viewport_size()
 
 		this.size_observer = new ResizeObserver(() => {
-			this.set_columns(this.columns)
+			this.set_columns(this.#inner_columns)
 			this.#update_viewport_size()
 			this.refresh(RefreshLevel.NewRows)
 		})
@@ -345,7 +350,9 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		}
 	}
 	attach() {
-		// This is a function in order to make `this` work
-		return (node: HTMLElement) => this.setup(node)
+		return untrack(() => {
+			// This is a function in order to make `this` work
+			return (node: HTMLElement) => this.setup(node)
+		})
 	}
 }
