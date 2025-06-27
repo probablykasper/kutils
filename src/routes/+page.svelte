@@ -8,6 +8,7 @@
 	let source_items = generate_source_items(500_000)
 
 	const virtual_grid = VirtualGrid.create(source_items, {
+		row_height: 24,
 		row_prepare(source_item, index) {
 			return {
 				id: source_item,

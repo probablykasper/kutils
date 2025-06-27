@@ -45,12 +45,14 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 	size_observer?: ResizeObserver
 	refreshing: RefreshLevel = RefreshLevel.Nothing
 
+	/** Use the `.create()` method instead. I couldn't get the constructor to infer generics */
 	private constructor(
 		public source_items: I[],
 		public options: {
 			buffer?: number
 			row_prepare: (source_items: I, index: number) => R
 			row_render?: (element: HTMLElement, item: R, index: number) => void
+			row_height: number
 		},
 	) {}
 
@@ -60,12 +62,11 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 			buffer?: number
 			row_prepare: (source_items: I, index: number) => R
 			row_render?: (element: HTMLElement, item: R, index: number) => void
+			row_height: number
 		},
 	) {
 		return new VirtualGrid<I, R>(source_items, options)
 	}
-
-	row_height = 24
 
 	set_source_items(source_items: I[]) {
 		this.source_items = source_items
@@ -89,9 +90,9 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 
 	#update_viewport_size() {
 		const viewport_height = this.viewport?.clientHeight ?? 0
-		this.viewport_row_count = Math.ceil(viewport_height / this.row_height)
+		this.viewport_row_count = Math.ceil(viewport_height / this.options.row_height)
 
-		const height = this.source_items.length * this.row_height
+		const height = this.source_items.length * this.options.row_height
 		if (this.main_element) {
 			this.main_element.style.height = height + 'px'
 		}
@@ -106,7 +107,10 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 		const buffer = this.options.buffer ?? 5
 		const rendered_count = this.viewport_row_count + buffer * 2
 
-		let start_index = Math.max(0, Math.floor(this.viewport.scrollTop / this.row_height - buffer))
+		let start_index = Math.max(
+			0,
+			Math.floor(this.viewport.scrollTop / this.options.row_height - buffer),
+		)
 		const end_index = Math.min(this.source_items.length - 1, start_index - 1 + rendered_count)
 		if (end_index - start_index + 1 < rendered_count) {
 			// fill backwards when scrolled to the end
@@ -268,7 +272,7 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 			if (!row.element) {
 				throw new Error('Unexpected missing row element')
 			}
-			row.element.style.translate = `0 ${row.index * this.row_height}px`
+			row.element.style.translate = `0 ${row.index * this.options.row_height}px`
 			row.element.setAttribute('aria-rowindex', String(row.index + 1))
 			const row_item = items[row.index]
 			for (let ci = 0; ci < this.#inner_columns.length; ci++) {
@@ -303,9 +307,9 @@ export class VirtualGrid<I, R extends Record<string, unknown>> {
 			throw new Error('No viewport')
 		}
 		const dummy = document.createElement('div')
-		dummy.style.height = this.row_height + 'px'
+		dummy.style.height = this.options.row_height + 'px'
 		dummy.style.position = 'absolute'
-		dummy.style.top = index * this.row_height + 'px'
+		dummy.style.top = index * this.options.row_height + 'px'
 		dummy.style.scrollMarginBottom = scroll_margin_bottom + 'px'
 		this.viewport.prepend(dummy)
 		dummy.scrollIntoView({ behavior: 'instant', block: 'nearest' })
