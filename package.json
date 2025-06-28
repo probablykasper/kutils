@@ -1,5 +1,5 @@
 {
-	"name": "kutils",
+	"name": "k5kit",
 	"version": "0.0.1",
 	"description": "Utilities for TypeScript and Svelte",
 	"type": "module",

@@ -1,4 +1,4 @@
-# KUtils
+# k5kit
 
 Utilities for TypeScript and Svelte
 
@@ -32,7 +32,7 @@ The `name` attribute is used as the key. If you need to use a different key than
 Usage:
 ```svelte
 <script>
-	import { auto_snapshot } from 'kutils'
+	import { auto_snapshot } from 'k5kit'
 	const snapshotter = auto_snapshot()
 	export const snapshot = snapshotter
 </script>
@@ -44,7 +44,7 @@ Usage:
 ## Shortcut checking
 
 ```js
-import { check_shortcut, check_modifiers } from 'kutils'
+import { check_shortcut, check_modifiers } from 'k5kit'
 check_shortcut(e, 'A') // 'A' with no modifiers pressed
 check_shortcut(e, 'A', 'shift', 'alt', 'cmdOrCtrl')
 check_modifiers(e) // Check that no modifiers are pressed (useful for mouse events)
