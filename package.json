@@ -12,7 +12,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "npx svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && eslint src *.js && prettier --check src *.js && eslint .",
-		"format": "prettier --write src *.js && eslint --fix src *.js"
+		"format": "prettier --write src *.js && eslint --fix src *.js",
+		"release": "npm run lint && npm run build && echo && bash -c 'read -ep \"Enter new version: \" version && read -ep \"Update CHANGELOG.md before continuing (Enter) \" && git add . && npm version --force \"$version\"' && read -ep \"Press enter to publish\" && npm publish && read -ep \"Create a GitHub release with release notes (Enter) && read -ep \"Nice! Press enter to exit\"\""
 	},
 	"files": [
 		"dist",
