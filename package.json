@@ -1,6 +1,6 @@
 {
 	"name": "k5kit",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"description": "Utilities for TypeScript and Svelte",
 	"type": "module",
 	"scripts": {
