@@ -5,7 +5,7 @@ Utilities for TypeScript and Svelte
 ## Virtual grid
 High-performance virtual grid. Renders rows as HTML elements directly for better scroll performance instead of relying on a JS framework (which means custom markup needs to be created with JS).
 
-[Virtual grid + KSelection usage example](src/routes/+page.svelte)
+[Virtual grid + KSelection usage example](https://github.com/probablykasper/k5kit/blob/main/src/routes/+page.svelte)
 
 Features:
 - Renders rows as HTML elements directly instead of using a JS framework (for better scroll performance)
@@ -15,7 +15,7 @@ Features:
 ## KSelection
 Row-based selection manager, with both a JS and Svelte implementation..
 
-[Virtual grid + KSelection usage example](src/routes/+page.svelte)
+[Virtual grid + KSelection usage example](https://github.com/probablykasper/k5kit/blob/main/src/routes/+page.svelte)
 
 Features:
 - Multi-selection
